@@ -1,8 +1,8 @@
 ### mitron-conference (*mitron* is *hindi* word which means *friends*)
 
 ### Need Contributers
-```sh
-This repository is under heavy development, need contributors. Pl
+```
+This repository is under heavy development, need contributors. If intrested please end PR.
 ```
 
 ### Technology Stack

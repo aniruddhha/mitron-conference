@@ -2,7 +2,7 @@
 
 ### Need Contributers
 ```
-This repository is under heavy development, need contributors. If intrested please end PR.
+This repository is under heavy development, need contributors.
 ```
 
 ### Technology Stack

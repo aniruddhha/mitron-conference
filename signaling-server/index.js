@@ -17,16 +17,10 @@ io.on('connection', socket => {
     })
 
     socket.on("offer_signal", payload => {
-        // console.log(`offer_signal`)
-        // console.log(payload)
-        // console.log(`________________`)
         io.to(payload.calleeId).emit('offer', { signalData: payload.signalData, callerId: payload.callerId });
     });
 
     socket.on("answer_signal", payload => {
-        // console.log(`answer_signal`)
-        // console.log(payload)
-        // console.log(`________________`)
         io.to(payload.callerId).emit('answer', { signalData: payload.signalData, calleeId: socket.id });
     });
 

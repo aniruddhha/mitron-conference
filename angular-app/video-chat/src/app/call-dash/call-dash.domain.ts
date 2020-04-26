@@ -1,3 +1,4 @@
+import SimplePeer from 'simple-peer';
 export interface Chat {
     msg: string,
     to: string,
@@ -5,6 +6,6 @@ export interface Chat {
 }
 
 export interface Participant {
-    data : any,
-    participantSocketId : string
+    participantSocketId: string,
+    peer: SimplePeer.Instance
 }

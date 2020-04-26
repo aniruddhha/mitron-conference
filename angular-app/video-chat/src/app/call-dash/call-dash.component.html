@@ -5,7 +5,7 @@
         </video>
         
         <div class="justify-content-center overlay-item">
-            <input type="button" value="Video" class="btn btn-sm btn-primary" (click)="btn()">
+            <input type="button" value="Video" class="btn btn-sm btn-primary">
             <input type="button" value="Audio" class="btn btn-sm btn-primary ml-1">
             <input type="button" value="Screen Share" class="btn btn-sm btn-primary ml-1">
             <input type="button" value="File Transfer" class="btn btn-sm btn-primary ml-1">
@@ -13,12 +13,12 @@
     </div>
 
     <div class="col-3 bg-light border scrollable h-100">
-        <P *ngFor="let chat of chats"> <b><i>{{chat?.from}}: </i></b>{{chat?.msg}}</P>
+        <P > <b><i>Room Name </i></b>Hi</P>
     </div>
 </div>
 
 <div class="row flex-nowrap room-members">
-    <div class="col" *ngFor="let participant of participants">
-        <video [src]="participant?.data" class="h-100 border border-danger"></video>
+    <div class="col" >
+        <video  class="h-100 border border-danger"></video>
     </div>
 </div>

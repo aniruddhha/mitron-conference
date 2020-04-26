@@ -1,7 +1,6 @@
-import { SignalingService, Signal, SignalMessage } from './../shared-services/signaling.service';
+import { SignalingService, SignalMessage } from './../shared-services/signaling.service';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Chat, Participant } from './call-dash.domain';
 import SimplePeer from 'simple-peer';
 
 @Component({
@@ -11,11 +10,7 @@ import SimplePeer from 'simple-peer';
 })
 export class CallDashComponent implements OnInit {
 
-  private peer: SimplePeer.Instance;
-
   roomName: string
-  chats: Array<Chat> = new Array()
-  participants: Array<Participant> = new Array()
 
   constructor(
     private signalingService: SignalingService,
@@ -24,59 +19,53 @@ export class CallDashComponent implements OnInit {
 
   ngOnInit(): void {
 
-    this.initiateSignaling()
+    this.signalingService.connect()
 
-    this.peer = new SimplePeer({
-      initiator: true,
+    this.signalingService.onConnect(() => {
+
+      console.log(`My Socket Id ${this.signalingService.socketId}`)
+      this.signalingService.requestForJoiningRoom({ roomName: this.roomName })
+
+      this.signalingService.onRoomParticipants(participants => {
+        console.log(participants)
+        this.initilizePeersWhenIJoinRoom(participants)
+      })
+
+      this.signalingService.onOffer(msg => {
+        console.log(msg)
+        this.initilizePeersWhenOthersJoin(msg)
+      })
+
+      this.signalingService.onAnswer(msg => {
+        console.log(msg)
+      })
+    })
+  }
+
+  initilizePeersWhenIJoinRoom(participants: Array<string>) {
+    const participantsExcludingMe = participants.filter(id => id != this.signalingService.socketId)
+    participantsExcludingMe.forEach(participant => {
+      const peer: SimplePeer.Instance = new SimplePeer({
+        initiator: true,
+        trickle: false
+      })
+
+      peer.on('signal', signal => {
+        this.signalingService.sendOfferSignal({ signalData: signal, callerId: this.signalingService.socketId, calleeId: participant })
+      })
+    })
+  }
+
+  initilizePeersWhenOthersJoin(msg: SignalMessage) {
+    const peer: SimplePeer.Instance = new SimplePeer({
+      initiator: false,
       trickle: false
     })
-    this.peer.on('signal', signal => {
-      console.log(signal)
-    })
-  }
 
-  btn() {
-    console.log('hi')
-  }
-
-  private initiateSignaling() {
-    this.roomName = this.actRt.snapshot.queryParams['roomName']
-    this.signalingService.connect()
-    this.signalingService.listenOnConnect(() => {
-      this.signalingService.sendJoinRoomSignal({ socketId: this.signalingService.socketId, roomName: this.roomName, type: Signal.HANDSHAKE, userName: 'Android' })
+    peer.on('signal', signal => {
+      this.signalingService.sendAnswerSignal({ signalData: signal, callerId: msg.callerId })
     })
 
-    this.signalingService.listenOnSignals((signal: SignalMessage) => {
-      this.performActionOnSignal(signal)
-    })
-  }
-
-  performActionOnSignal(signal: SignalMessage) {
-    console.log(signal)
-    if (signal.type == Signal.ROOM_JOINED) {
-      this.actionRoomJoined(signal)
-    }
-    if (signal.type == Signal.DISCONNECTED) {
-      this.populateParticipantsOnDisconnecting(signal)
-    }
-  }
-
-  actionRoomJoined(signal: SignalMessage) {
-    this.populateChats(signal)
-    this.populateParticipants(signal)
-  }
-
-  populateChats(signal: SignalMessage) {
-    this.chats.push({ msg: signal.msg, to: 'me', from: signal.userName })
-  }
-
-  populateParticipants(signal: SignalMessage) {
-    this.participants = []
-    const participantsExcludingMe = signal.participants.filter(socketId => this.signalingService.socketId != socketId)
-    participantsExcludingMe.forEach(socketId => this.participants.push({ data: 'https://archive.org/download/Popeye_forPresident/Popeye_forPresident_512kb.mp4', participantSocketId: socketId }))
-  }
-  populateParticipantsOnDisconnecting(signal: SignalMessage) {
-    this.participants = this.participants.filter(participant => participant.participantSocketId != signal.socketId)
-    console.log(this.participants)
+    peer.signal(msg.signalData)
   }
 }

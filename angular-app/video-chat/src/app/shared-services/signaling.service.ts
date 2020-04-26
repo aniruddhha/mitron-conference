@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import io from 'socket.io-client';
-import { Participant } from '../call-dash/call-dash.domain';
+import { SignalData } from 'simple-peer';
 
 @Injectable({
   providedIn: 'root'
@@ -19,51 +19,47 @@ export class SignalingService {
     this.socket = io.connect('http://localhost:3000')
   }
 
-  listen(channel: string, fn: Function) {
+  private listen(channel: string, fn: Function) {
     this.socket.on(channel, fn)
   }
 
-  listenOnConnect(fn: Function) {
-    this.listen(Signal.CONNECT, fn)
-  }
-
-  listenOnSignals(fn: Function) {
-    this.listen(Signal.SIGNAL, fn)
-  }
-
-  send(chanel: string, message: SignalMessage) {
+  private send(chanel: string, message: SignalMessage) {
     this.socket.emit(chanel, message)
   }
 
-  sendJoinRoomSignal(msg: SignalMessage) {
-    this.send(Signal.HANDSHAKE, msg)
+  onConnect(fn: () => void) {
+    this.listen('connect', fn)
   }
 
-  sendSignal(msg: SignalMessage) {
-    this.send(Signal.SIGNAL, msg)
+  requestForJoiningRoom(msg: SignalMessage) {
+    this.send('room_join_request', msg)
   }
 
-  sendCallRequest(msg: SignalMessage) {
-    this.sendSignal(msg)
+  onRoomParticipants(fn: (participants: Array<string>) => void) {
+    this.listen('room_users', fn)
+  }
+
+  sendOfferSignal(msg: SignalMessage) {
+    this.send('offer_signal', msg)
+  }
+
+  onOffer(fn: (msg: SignalMessage) => void) {
+    this.listen('offer', fn)
+  }
+
+  sendAnswerSignal(msg: SignalMessage) {
+    this.send('answer_signal', msg)
+  }
+
+  onAnswer(fn: (msg: SignalMessage) => void) {
+    this.listen('answer', fn)
   }
 }
 
 export interface SignalMessage {
-  socketId: string
-  type: Signal,
-  participants?: Array<string>
-  userName?: string,
-  roomName?: string
+  callerId?: string
+  calleeId?: string,
+  signalData?: SignalData,
   msg?: string,
-  tm?: number
-}
-
-export enum Signal {
-  HANDSHAKE = 'handshake',
-  CONNECT = 'connect',
-  VIDEO_CALL = 'video_call',
-  SIGNAL = 'signal',
-  ROOM_JOINED = 'room_joined',
-  PING = 'ping',
-  DISCONNECTED = 'disconnected'
+  roomName?: string
 }

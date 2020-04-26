@@ -4,35 +4,34 @@ var io = require('socket.io')(http);
 var port = process.env.PORT || 3000;
 
 io.on('connection', socket => {
-    socket.on('handshake', handshakeSignal => {
-        socket.join(handshakeSignal['roomName'], err => {
+    socket.on('room_join_request', payload => {
+        socket.join(payload.roomName, err => {
             if (!err) {
-                io.in(handshakeSignal['roomName']).clients((err, clients) => {
-                    console.log(clients)
+                io.in(payload.roomName).clients((err, clients) => {
                     if (!err) {
-                        const signal = { ...handshakeSignal }
-                        signal['type'] = 'room_joined'
-                        signal['msg'] = `${handshakeSignal['userName']} has joined room ${handshakeSignal['roomName']}`
-                        signal['participants'] = clients
-
-                        io.in(handshakeSignal['roomName']).emit('signal', signal)
+                        io.in(payload.roomName).emit('room_users', clients)
                     }
                 });
             }
         })
+    })
+
+    socket.on("offer_signal", payload => {
+        // console.log(`offer_signal`)
+        // console.log(payload)
+        // console.log(`________________`)
+        io.to(payload.calleeId).emit('offer', { signalData: payload.signalData, callerId: payload.callerId });
     });
 
-    socket.on('signal', signal => {
-        io.in(handshakeSignal['roomName']).clients((err, clients) => {
-            const copySignal = { ...signal }
-            copySignal['participants'] = clients
-            socket.to(signal['roomName']).emit('signal', copySignal)
-        })
-    })
+    socket.on("answer_signal", payload => {
+        // console.log(`answer_signal`)
+        // console.log(payload)
+        // console.log(`________________`)
+        io.to(payload.callerId).emit('answer', { signalData: payload.signalData, calleeId: socket.id });
+    });
 
     socket.on('disconnect', () => {
         console.log(socket.id)
-
         io.emit('signal', { type: 'disconnected', socketId: socket.id })
     })
 });

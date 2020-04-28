@@ -16,17 +16,16 @@ io.on('connection', socket => {
         })
     })
 
-    socket.on("offer_signal", payload => {
+    socket.on('offer_signal', payload => {
         io.to(payload.calleeId).emit('offer', { signalData: payload.signalData, callerId: payload.callerId });
     });
 
-    socket.on("answer_signal", payload => {
+    socket.on('answer_signal', payload => {
         io.to(payload.callerId).emit('answer', { signalData: payload.signalData, calleeId: socket.id });
     });
 
     socket.on('disconnect', () => {
-        console.log(socket.id)
-        io.emit('signal', { type: 'disconnected', socketId: socket.id })
+        io.emit('room_left', { type: 'disconnected', socketId: socket.id })
     })
 });
 

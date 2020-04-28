@@ -54,6 +54,10 @@ export class SignalingService {
   onAnswer(fn: (msg: SignalMessage) => void) {
     this.listen('answer', fn)
   }
+
+  onRoomLeft(fn: (socketId: string) => void) {
+    this.listen('room_left', fn)
+  }
 }
 
 export interface SignalMessage {

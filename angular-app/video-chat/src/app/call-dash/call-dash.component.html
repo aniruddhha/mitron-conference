@@ -1,7 +1,7 @@
 <div class="row border h-75 no-gutters">
     <div class="col-9 bg-light border h-100 d-flex justify-content-center overlay-container" >
 
-        <video class="border border-danger w-100 h-100" src="https://archive.org/download/Popeye_forPresident/Popeye_forPresident_512kb.mp4" controls>
+        <video class="border border-danger w-100 h-100" #myVideo>
         </video>
         
         <div class="justify-content-center overlay-item">
@@ -18,7 +18,7 @@
 </div>
 
 <div class="row flex-nowrap room-members">
-    <div class="col" >
-        <video  class="h-100 border border-danger"></video>
+    <div class="col" *ngFor="let mitronPeer of mitronPeers">
+        <video [id]="mitronPeer?.peerId" class="h-100 border border-danger" #peerVideo></video>
     </div>
 </div>

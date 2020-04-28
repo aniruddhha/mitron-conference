@@ -5,7 +5,7 @@ export interface Chat {
     from: string
 }
 
-export interface Participant {
-    participantSocketId: string,
+export interface MitronPeer {
+    peerId: string,
     peer: SimplePeer.Instance
 }
